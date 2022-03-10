@@ -67,11 +67,17 @@ func (s *wsserver) spamMessage() {
 		"apm 300",
 	}
 
-	for clientID, clientConn := range s.clients {
-		m := fmt.Sprintf("client ID: %s\n%s", clientID, random(messages...))
-		err := clientConn.WriteMessage(1, []byte(m))
-		if err != nil {
-			log.Printf("error %s sending message to client %s", err.Error(), clientID)
+	const interval = 2
+
+	for {
+		for clientID, clientConn := range s.clients {
+			m := fmt.Sprintf("client ID: %s\n%s\n", clientID, random(messages...))
+			err := clientConn.WriteMessage(1, []byte(m))
+			if err != nil {
+				log.Printf("error %s sending message to client %s", err.Error(), clientID)
+				delete(s.clients, clientID)
+			}
+			time.Sleep(interval * time.Second)
 		}
 	}
 
